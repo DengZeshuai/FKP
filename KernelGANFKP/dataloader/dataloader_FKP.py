@@ -25,6 +25,9 @@ class DataGenerator_FKP(Dataset):
 
         # Read input image
         self.input_image = read_image(conf.input_image_path) / 255.
+        h, w, _ = self.input_image.shape
+        if h < conf.input_crop_size or w < conf.input_crop_size:
+            self.g_input_shape = conf.input_crop_size / 2
         self.shave_edges(scale_factor=conf.scale_factor, real_image=conf.real)
 
         self.in_rows, self.in_cols = self.input_image.shape[0:2]

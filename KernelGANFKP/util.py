@@ -380,24 +380,39 @@ def evaluation_dataset(input_dir, conf, used_iter=''):
     im_psnr = 0
     im_ssim = 0
     kernel_psnr = 0
-    for filename in filesource:
+    for filename in filesource[:]:
         # load gt kernel
-        path = os.path.join(input_dir, filename).replace('lr_x', 'gt_k_x').replace('.png', '.mat')
-        kernel_gt = sio.loadmat(path)['Kernel']
+        if not conf.real:
+            path = os.path.join(input_dir, filename).replace('lr_x', 'gt_k_x').replace('.png', '.mat')
+            kernel_gt = sio.loadmat(path)['Kernel']
 
         # load estimated kernel
         if conf.real:
-            kernel_gt = np.ones([11, 11])
+            kernel_gt = np.ones([21, 21])
         else:
             path = os.path.join(conf.output_dir_path, filename).replace('.png', '.mat')
             kernel = sio.loadmat(path)['Kernel']
 
         # calculate psnr
-        kernel_psnr += calculate_psnr(kernel_gt, kernel, is_kernel=True)
+        if not conf.real:
+            kernel_psnr += calculate_psnr(kernel_gt, kernel, is_kernel=True)
+        else:
+            kernel_psnr += 0
 
         if conf.SR:
             # load HR
-            path = os.path.join(input_dir.replace(input_dir.split('/')[-1], 'HR'), filename)
+            scale_factor = 4 if conf.X4 else 2
+            if filename.find('x{}'.format(scale_factor)) >= 0:
+                hr_filename = filename.replace('x{}'.format(scale_factor), "")
+                hr_path = os.path.dirname(os.path.dirname(input_dir))
+                path = os.path.join(hr_path, 'HR', hr_filename)
+                if os.path.basename(hr_path) == 'DIV2KRK':
+                    path = os.path.join(hr_path, 'gt_rename', hr_filename)
+            else:
+                path = os.path.join(input_dir.replace(input_dir.split('/')[-1], 'HR'), filename)
+                if input_dir.find('DIV2KRK') >= 0:
+                    path = os.path.join(input_dir.replace(input_dir.split('/')[-1], 'gt_rename'), filename)
+            
             hr = read_image(path)
             hr = modcrop(hr, 4 if conf.X4 else 2)
 

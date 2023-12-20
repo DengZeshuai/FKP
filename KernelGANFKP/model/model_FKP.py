@@ -110,7 +110,7 @@ class KernelGAN_FKP:
     '''
 
     def finish(self):
-        save_final_kernel_png(move2cpu(self.curr_k), self.conf, self.conf.kernel_gt)
+        # save_final_kernel_png(move2cpu(self.curr_k), self.conf, self.conf.kernel_gt)
         if self.conf.verbose:
             print(
                 'KernelGAN-FKP estimation complete! (see --%s-- folder)\n' % self.conf.output_dir_path + '*' * 60 + '\n\n')

@@ -36,7 +36,7 @@ def train_FKP(conf):
     data_loader = torch.utils.data.DataLoader(data, batch_size=64, shuffle=True, num_workers=16, pin_memory=True)
 
     # X4 needs more iterations to converge
-    total_iter = 4000 if conf.X4 else 1000
+    total_iter = 4 if conf.X4 else 1000
     for batch_idx, (g_in, d_in) in tqdm.tqdm(enumerate(data_loader), total=total_iter, ncols=60):
         if batch_idx >= total_iter:
             break
@@ -70,6 +70,7 @@ def create_params(filename, args):
         params.append('--SR')
     if args.real:
         params.append('--real')
+    params.extend(['--input_crop_size', str(args.input_crop_size)])
     return params
 
 
@@ -97,6 +98,7 @@ def main():
                       help='path to image output directory, to be overwritten automatically.')
     prog.add_argument('--X4', action='store_true', default=False,
                       help='The wanted SR scale factor, to be overwritten automatically.')
+    prog.add_argument('--input_crop_size', type=int, default=32, help='Generators crop size') # 64 is too large for Set14 x4 image
 
     args = prog.parse_args()
 
@@ -109,8 +111,8 @@ def main():
         print('KernelGAN-FKP only supports X2 and X4')
         prog.exit(0)
 
-    args.input_dir = '../data/datasets/{}/KernelGANFKP_lr_x{}'.format(args.dataset, 4 if args.X4 else 2)
-    args.output_dir = '../data/log_KernelGANFKP/{}_{}_lr_x{}'.format(args.dataset, args.model, 4 if args.X4 else 2)
+    # args.input_dir = '../data/datasets/{}/KernelGANFKP_lr_x{}'.format(args.dataset, 4 if args.X4 else 2)
+    # args.output_dir = '../data/log_KernelGANFKP/{}_{}_lr_x{}'.format(args.dataset, args.model, 4 if args.X4 else 2)
 
     # load nonblind model
     if args.SR:
